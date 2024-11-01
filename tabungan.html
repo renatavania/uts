@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Tabungan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif; 
+    }
+
+    body {
+        background-image: url('1.png'); 
+        cursor: url('2.png'), auto; 
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        animation: moveBackground 40s ease infinite;
+    }
+
+    @keyframes moveBackground {
+        0% {
+            background-position: 0% 0%;
+        }
+        50% {
+            background-position: 100% 100%;
+        }
+        100% {
+            background-position: 0% 0%;
+        }
+    }
+
+    .container {
+        text-align: center;
+        width: 80%;
+        max-width: 1200px;
+        padding: 20px;
+        background-color: #f6f6f8;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        color: #070264;
+        display: flex; 
+        flex-direction: row; 
+        justify-content: space-between;
+        position: relative;
+    }
+
+    .left-section {
+        flex: 1;
+        text-align: left;
+        padding-right: 20px;
+    }
+
+    .right-section {
+        flex: 1;
+        position: relative;
+    }
+
+    h1 {
+        color: #070328;
+        margin-bottom: 5px;
+    }
+    
+    h2 {
+        margin-top: 5px;
+    }        
+
+    .balance {
+        margin: 20px 0;
+    }
+
+    .input-section {
+        margin-bottom: 20px;
+    }
+
+    input[type="number"] {
+        padding: 10px;
+        width: calc(100% - 120px);
+        margin-right: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+    }
+
+    button {
+        padding: 10px 20px;
+        background: linear-gradient(90deg, #176689, #051d36);
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 15px;
+    }
+
+    button:hover {
+        background: linear-gradient(130deg, #061A23, #176689); 
+    }
+
+    .chart-container {
+        width: 100%;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    #savingsChart {
+        width: 100% !important;
+        height: 300px !important;
+    }
+
+    /* Tombol "Back" */
+    .back-button {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        padding: 8px 15px;
+        background-color: #051d36;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-bottom: -25PX;
+    }
+
+    .back-button:hover {
+        background-color: #0e078a;
+    }
+
+    .history {
+        margin-top: 20px;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 10px;
+        background-color: #f8f9fa;
+    }
+
+    .history h3 {
+        color: #0c043a;
+        margin-bottom: 10px;
+    }
+
+    .history ul {
+        list-style-type: none;
+    }
+
+    .history li {
+        padding: 5px;
+        border: 1px solid #121111;
+        border-radius: 5px;
+        margin-bottom: 5px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .history li span {
+        color: #4b5d92;
+        font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-section">
+            <h1>SAVINGS</h1>
+            <div class="balance">
+                <h2>Total Tabungan: <span id="totalSavings">Rp 0</span></h2>
+            </div>
+            <div class="input-section">
+                <input type="number" id="amount" placeholder="Masukkan nominal tabungan">
+                <button onclick="addSaving()">Tambah Tabungan</button>
+            </div>
+            <div class="history">
+                <h3>Riwayat Tabungan</h3>
+                <ul id="historyList"></ul>
+            </div>
+        </div>
+        <div class="right-section">
+            <div class="chart-container">
+                <canvas id="savingsChart"></canvas>
+            </div>
+          
+            <a href="utama.html" class="back-button">Back</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+
+        let savingsData = [];
+        let totalSavings = 0;
+
+        const ctx = document.getElementById('savingsChart').getContext('2d');
+        const savingsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Track Tabungan',
+                    data: savingsData,
+                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                    borderColor: '#0c043a',
+                    borderWidth: 2,
+                    fill: true
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        function addSaving() {
+            const amount = document.getElementById('amount').value;
+            if (amount && amount > 0) {
+                totalSavings += parseInt(amount);
+                savingsData.push(totalSavings);
+
+                const currentDate = new Date().toLocaleDateString();
+                savingsChart.data.labels.push(currentDate);
+
+                savingsChart.update();
+                document.getElementById('totalSavings').innerText = 'Rp ' + totalSavings.toLocaleString();
+                addHistoryItem(currentDate, amount);
+
+                document.getElementById('amount').value = '';
+            } else {
+                alert('Masukkan jumlah yang valid!');
+            }
+        }
+
+        function addHistoryItem(date, amount) {
+            const historyList = document.getElementById('historyList');
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `<span>${date}</span><span>+Rp ${parseInt(amount).toLocaleString()}</span>`;
+            historyList.appendChild(listItem);
+        }
+    </script>
+</body>
+</html>
